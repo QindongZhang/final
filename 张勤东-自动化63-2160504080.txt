@@ -1,0 +1,110 @@
+pic=cell(6,4);
+pic00=imread('test1.tif');
+pic{1,1}=pic00(:,:,1);
+pic{2,1}=imread('test2.png');
+pic{3,1}=imread('test3.jpg');
+pic{5,1}=imread('test5.png');
+pic{6,1}=imread('test6.jpg');
+[pic0,map0]=imread('test4.bmp');
+pic{4,1}=ind2gray(pic0,map0);
+
+
+
+for i=1:6
+    pic{i,2}=double(edge(pic{i,1},'sobel'));
+    pic{i,3}=double(edge(pic{i,1},'canny',0.2));
+    pic{i,4}=double(edge(pic{i,1},'Roberts'));
+end
+
+for i=1:6
+    figure(i)
+    subplot(2,2,1)
+    imshow(pic{i,1})
+    title('原图')
+    subplot(2,2,2)
+    imshow(pic{i,2})
+    title('Sobel')
+    subplot(2,2,3)
+    imshow(pic{i,3})
+    title('Canny')
+    subplot(2,2,4)
+    imshow(pic{i,4})
+    title('Roberts')
+end
+
+for ii=1:6
+    figure
+    for iii=2:4
+        
+[H,T,R] = hough(pic{ii,iii});
+P  = houghpeaks(H,10,'threshold',ceil(0.5*max(H(:))));
+
+lines = houghlines(pic{ii,iii},T,R,P,'FillGap',15,'MinLength',30);
+subplot(1,3,iii-1)
+imshow(pic{ii,1}), hold on
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+end
+
+if iii==2
+    title('Sobel')
+elseif iii==3
+    title('Canny')
+else
+    title('Roberts')
+end
+
+    end
+end
+
+
+
+for kk=1:6
+
+figure
+[H,T,R] = hough(pic{kk,2});
+P  = houghpeaks(H,10,'threshold',ceil(0.5*max(H(:))));
+lines = houghlines(pic{kk,2},T,R,P,'FillGap',15,'MinLength',30);
+subplot(2,2,1)
+imshow(pic{kk,1}), hold on
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+end
+title('对照组')
+
+[H,T,R] = hough(pic{kk,2},'RhoResolution',0.5,'Theta',-90:0.5:89);
+P  = houghpeaks(H,10,'threshold',ceil(0.5*max(H(:))));
+lines = houghlines(pic{kk,2},T,R,P,'FillGap',15,'MinLength',30);
+subplot(2,2,2) 
+imshow(pic{kk,1}), hold on
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+end
+title('减小细分')
+
+[H,T,R] = hough(pic{kk,2});
+P  = houghpeaks(H,10,'threshold',ceil(0.8*max(H(:))));
+lines = houghlines(pic{kk,2},T,R,P,'FillGap',15,'MinLength',30);
+subplot(2,2,3)
+imshow(pic{kk,1}), hold on
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+end
+title('增加累加单元阈值')
+
+[H,T,R] = hough(pic{kk,2});
+P  = houghpeaks(H,10,'threshold',ceil(0.5*max(H(:))));
+lines = houghlines(pic{kk,2},T,R,P,'FillGap',30,'MinLength',60);
+subplot(2,2,4)
+imshow(pic{kk,1}), hold on
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');
+end
+title('增加连续性阈值')
+
+end
